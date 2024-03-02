@@ -12,8 +12,8 @@ INSERT INTO salary_per_hour (year, month, branch_id, salary_per_hour)
 with
 	eligible_timesheets as (
 	/*
-		- exclude missing checkin or checkout.
-		- remove duplication per employee_id, date, checkin, checkout.
+		- exclude missing checkin or checkout
+		- remove duplication per employee_id, date, checkin, checkout
 	*/
 	select employee_id, date, checkin, checkout
 	from timesheets
@@ -24,8 +24,8 @@ with
 	),
 	eligible_employees as (
 	/*
-		- found duplicate employee data with different salary, e.g. employee_id='218078'.
-		- handle duplicate data by calculate the avg salary.
+		- found duplicate employee data with different salary, e.g. employee_id='218078'
+		- handle duplicate employee by calculating the avg salary
 	*/
 	with
 		duplicate_employees as (
@@ -54,8 +54,8 @@ with
 	),
 	calculate_time_delta AS (
 	/*
-		- found checkout time < checkin time. handle by use checkin as checkout, and vice versa.
-		- calculate `checkout - checkin`, then convert it in hour level.
+		- found checkout time < checkin time. handle by use checkin as checkout, and vice versa
+		- calculate `checkout - checkin`, then convert it in hour level
 	*/
 	select
 		employee_id, date, checkin, checkout, time_delta,
@@ -75,11 +75,11 @@ with
 	),
 	total_hour_per_monthyear_branch_employee as (
 	/*
-		- sum working_hour per year, month, branch_id, & employee_id.
+		- sum working_hour per year, month, branch_id, & employee_id
 	*/
 	select 
-		extract('year' from cal_time_delta.date) as year,
-		extract('month' from cal_time_delta.date) as month,
+		extract('year' from cal_time_delta.date)::text as year,
+		extract('month' from cal_time_delta.date)::text as month,
 		eli_emp.branch_id,
 		cal_time_delta.employee_id,
 		eli_emp.salary,
@@ -91,11 +91,11 @@ with
 	divide_total_summary_with_working_hour as (
 	/*
 		- convert month num to month name
-		- sum salary per year, month, & branch_id.
-		- sum total workig hour per year, month, & branch_id.
-		- divide those 2 numbers and round it.
+		- sum salary per year, month, & branch_id
+		- sum total workig hour per year, month, & branch_id
+		- divide those 2 numbers and round it
 	*/
-	select year, to_char(to_date(month::text, 'MM'),'month') as month, branch_id, 
+	select year, initcap(trim(to_char(to_date(month, 'MM'),'month'))) as month, branch_id, 
 		round(cast(sum(salary)/sum(total_working_hour) as numeric),2) salary_per_hour
 	from total_hour_per_monthyear_branch_employee
 	group by 1,2,3
