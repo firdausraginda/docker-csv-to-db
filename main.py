@@ -21,10 +21,9 @@ path_to_src = get_path_src_files()
 src_files = os.listdir(path_to_src)
 
 for src_file in src_files:
-    df = pl.read_csv(
-        f"{path_to_src}/{src_file}",
-        schema=data_source_config_dict[src_file.replace(".csv", "")]
-    )
-    print(df)
-
-    break
+    if src_file == 'employees.csv':
+        df = pl.read_csv(
+            f"{path_to_src}/{src_file}",
+            schema=data_source_config_dict[src_file.replace(".csv", "")]
+        )
+        print(df)

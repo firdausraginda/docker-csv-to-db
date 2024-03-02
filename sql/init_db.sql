@@ -6,3 +6,15 @@ CREATE TABLE IF NOT EXISTS employees (
 	resign_date DATE
 );
 
+COPY employees
+FROM '/docker-entrypoint-initdb.d/src/employees.csv'
+DELIMITER ','
+CSV HEADER;
+
+CREATE TABLE IF NOT EXISTS timesheets (
+	timesheet_id VARCHAR PRIMARY KEY,
+	employee_id VARCHAR NOT NULL,
+	date DATE NOT NULL,
+	checkin DATE,
+	checkout DATE
+);
