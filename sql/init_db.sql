@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS employees (
-  id SERIAL PRIMARY KEY,
+  	id SERIAL PRIMARY KEY,
 	employee_id VARCHAR,
 	branch_id VARCHAR NOT NULL,
 	salary INTEGER NOT NULL,
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS timesheets (
 	timesheet_id VARCHAR PRIMARY KEY,
 	employee_id VARCHAR NOT NULL,
 	date DATE NOT NULL,
-	checkin VARCHAR,
-	checkout VARCHAR
+	checkin TIME,
+	checkout TIME
 );
 
 COPY timesheets (timesheet_id, employee_id, date, checkin, checkout)
