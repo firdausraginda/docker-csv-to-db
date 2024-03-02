@@ -1,25 +1,14 @@
-TRUNCATE TABLE public.employees;
-TRUNCATE TABLE public.timesheets;
+TRUNCATE TABLE salary_per_hour;
 
--- COPY employees
--- FROM '/docker-entrypoint-initdb.d/employees.csv'
--- DELIMITER ','
--- CSV HEADER;
-
--- CREATE TABLE IF NOT EXISTS public.timesheets (
--- 	timesheet_id VARCHAR PRIMARY KEY,
--- 	employee_id VARCHAR NOT NULL,
--- 	date DATE NOT NULL,
--- 	checkin DATE,
--- 	checkout DATE
--- );
-
-
-CREATE TABLE IF NOT EXISTS employees (
-	employee_id VARCHAR PRIMARY KEY,
-	branch_id VARCHAR NOT NULL,
-	salary INTEGER NOT NULL,
-	join_date DATE NOT NULL,
-	resign_date DATE
-);
-
+select 
+	* ,
+	case
+		when checkout > checkin then checkout - checkin
+		else TO_TIMESTAMP(CONCAT(date(date + interval '1 day'),' ',checkout), 'YYYY-MM-DD HH24:MI:SS') - 
+			TO_TIMESTAMP(CONCAT(date,' ',checkin), 'YYYY-MM-DD HH24:MI:SS')
+	end time_delta
+from timesheets t
+where
+	checkin is not null
+	and checkout is not null
+order by 6;
