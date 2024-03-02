@@ -1,6 +1,7 @@
 
 services:
     postgres:
+        container_name: db-postgres
         image: postgres:12.3-alpine
         restart: always
         environment: 
@@ -13,4 +14,3 @@ services:
           - ./postgres-data:/var/lib/postgresql/data
           - ./src:/docker-entrypoint-initdb.d/src
           - ./sql/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
-
