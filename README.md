@@ -4,7 +4,7 @@
 
 ### docker command 
 * use docker to ease on setup the DB & pre-loaded tables (`employees` & `timesheets`).
-* command to init DB with given config in `.env`:
+* run this command to initialize postgres DB with given config in `.env` and create table `employees` & `timesheets`:
 ```
 docker-compose --env-file .env up -d
 ```
@@ -13,20 +13,32 @@ docker-compose --env-file .env up -d
 * kindly find the DB confing in `.env` file, to connect in your local.
 
 ### python transform script
-* python script to extract, transform, & load using **incremental mode** located in `transform-scripts/salary_effectivity_append.py`.
-* to run this script in your local, kindly create virtual environment, and install all library in `requirements.txt`.
-* command to execute the code:
-```
-python3 transform-scripts/salary_effectivity_append.py
-```
-* this script utilize python [**polars**](https://docs.pola.rs/) library to manipulate data from CSV in form of dataframe, and write it to DB. Compare to pandas, [polars is more faster](https://medium.com/cuenex/pandas-2-0-vs-polars-the-ultimate-battle-a378eb75d6d1).
-* to make it append the existing data, I set `if_table_exists=append` as parameter in `write_database()` function.
-* to make the **ingest process cheaper**, I create function `loop_df_per_chunk()` to slice dataframe per chunk, and ingest each sliced dataframe to DB.
+* script description
+  * path: `transform-scripts/salary_effectivity_append.py`
+  * purpose: python script to extract, transform, & load using **incremental mode** 
+* execute script:
+  1. create virtual environment, and install all library in `requirements.txt`
+  2. execute command: `python3 transform-scripts/salary_effectivity_append.py`
+* script flow
+  1. create dataframe from CSV files
+  2. manipulate to expected result
+  3. store result to final dataframe 
+  4. slice dataframe per chunk
+  5. append each sliced dataframe to DB
+* note
+  * this script utilize python [**polars**](https://docs.pola.rs/) library to manipulate data from CSV in form of dataframe, and write it to DB. Compare to pandas, [polars is more faster](https://medium.com/cuenex/pandas-2-0-vs-polars-the-ultimate-battle-a378eb75d6d1).
 
 ### SQL transform script
-* SQL script that extract data from `employees` and `timesheets` table, and load to new table with **full-snapshot mode** is located in `transform-scripts/salary_effectivity_truncate.sql`. 
-* kindly execute this SQL query on PGAdmin or dbeaver or any other DB tools.
-* to make it overwrite existing data, the query performs `TRUNCATE TABLE ..` command first, before the `INSERT INTO ..`
+* script description
+  * path: `transform-scripts/salary_effectivity_truncate.sql`
+  * purpose: extract data from `employees` and `timesheets` table, and load to new table with **full-snapshot mode**
+* execute script
+  * execute this SQL query on PGAdmin or dbeaver or any other DB tools
+* script flow
+  1. create destination table if not exists
+  2. truncate destination table
+  3. manipulate to expected result
+  4. insert data to destination table
 
 ### destination table
 * both SQL & python script will load to new table `salary_effectivity` with columns `year`, `month`, `branch_id`, & `salary_per_hour`.
