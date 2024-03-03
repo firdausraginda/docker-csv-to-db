@@ -1,8 +1,11 @@
 import pathlib
 import polars as pl
+from dotenv import load_dotenv
+import os
 import calendar
 
-# define constant variable
+
+# define constant variables
 DATA_SOURCE_CONFIG_DICT = {
     "employees": {
         "employee_id": pl.Utf8,
@@ -20,8 +23,17 @@ DATA_SOURCE_CONFIG_DICT = {
     }
 }
 
+DB_CONN_DICT = {
+    "PORT": "", 
+    "HOST": "", 
+    "POSTGRES_DB": "", 
+    "POSTGRES_PASSWORD": "", 
+    "POSTGRES_USER": ""
+}
+
+
 def df_from_csv(path_to_src, csv_file_name):
-    """create dataframe from csv file"""
+    """create dataframe from csv file with given specification"""
 
     return pl.read_csv(
         f"{path_to_src}/{csv_file_name}",
@@ -112,18 +124,74 @@ def transform_data(df_employees, df_timesheets):
 
     return df_divide_total_summary_with_working_hour
 
+def get_db_connection_uri():
+    """return connection uri to DB with config from .env file"""
+
+    load_dotenv()
+    [DB_CONN_DICT.update({key:os.environ[key]}) for key in DB_CONN_DICT.keys()]
+    conn = f"postgresql://{DB_CONN_DICT["POSTGRES_USER"]}:{DB_CONN_DICT["POSTGRES_PASSWORD"]}@{DB_CONN_DICT["HOST"]}:{DB_CONN_DICT["PORT"]}/{DB_CONN_DICT["POSTGRES_DB"]}"
+    return conn
+
+def insert_to_db(df, conn_uri, dest_table_name):
+    """insert dataframe to DB"""
+
+    try:
+        df.write_database(
+            dest_table_name,
+            connection=conn_uri,
+            if_table_exists="append",
+            engine="adbc"
+        )
+        print(f"successfully append data to table '{dest_table_name}' !")
+    except Exception as e:
+        if e.sqlstate == "42P01":
+            df.write_database(
+                dest_table_name,
+                connection=conn_uri,
+                if_table_exists="replace",
+                engine="adbc"
+            )
+            print(f"table '{dest_table_name}' is not exists, will create it for the first time ...")
+            print(f"successfully create table '{dest_table_name}', and write the data !")
+        else:
+            raise e
+
+def read_data_from_db(query, conn_uri):
+    """execute query to select data from DB"""
+    
+    try:
+        df_result = pl.read_database_uri(
+            query=query,
+            uri=conn_uri,
+            engine="adbc"
+        )
+    except Exception as e:
+        raise e
+    else:
+        return df_result
+
 
 if __name__ == "__main__":
     # define csv name
     employee_csv_name = "employees.csv"
     timesheets_csv_name = "timesheets.csv"
-    path_to_src = get_path_src_dir()
 
     # create dataframe
+    path_to_src = get_path_src_dir()
     df_employees = df_from_csv(path_to_src, employee_csv_name)
     df_timesheets = df_from_csv(path_to_src, timesheets_csv_name)
 
     df_salary_per_hour = transform_data(df_employees, df_timesheets)
 
+    conn_uri = get_db_connection_uri()
 
-    
+    dest_table_name = "salary_per_hour"
+    insert_to_db(df_salary_per_hour, conn_uri, dest_table_name)
+
+    # query = """
+    #     SELECT *
+    #     FROM salary_per_hour
+    #     LIMIT 100
+    # """
+    # df_read_salary_per_hour = read_data_from_db(query, conn_uri)
+    # print(df_read_salary_per_hour.head())
