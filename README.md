@@ -1,5 +1,8 @@
 # docker-csv-to-db
 
+## result
+![ss result](https://github.com/firdausraginda/docker-csv-to-db/blob/main/ss_result.png)
+
 ## how to run
 
 ### docker command 
