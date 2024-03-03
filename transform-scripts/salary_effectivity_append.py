@@ -181,17 +181,17 @@ if __name__ == "__main__":
     df_employees = df_from_csv(path_to_src, employee_csv_name)
     df_timesheets = df_from_csv(path_to_src, timesheets_csv_name)
 
-    df_salary_per_hour = transform_data(df_employees, df_timesheets)
+    df_salary_effectivity = transform_data(df_employees, df_timesheets)
 
     conn_uri = get_db_connection_uri()
 
-    dest_table_name = "salary_per_hour"
-    insert_to_db(df_salary_per_hour, conn_uri, dest_table_name)
+    dest_table_name = "salary_effectivity"
+    insert_to_db(df_salary_effectivity, conn_uri, dest_table_name)
 
     # query = """
     #     SELECT *
-    #     FROM salary_per_hour
+    #     FROM salary_effectivity
     #     LIMIT 100
     # """
-    # df_read_salary_per_hour = read_data_from_db(query, conn_uri)
-    # print(df_read_salary_per_hour.head())
+    # df_read_salary_effectivity = read_data_from_db(query, conn_uri)
+    # print(df_read_salary_effectivity.head())
