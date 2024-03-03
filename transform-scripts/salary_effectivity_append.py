@@ -132,6 +132,16 @@ def get_db_connection_uri():
     conn = f"postgresql://{DB_CONN_DICT["POSTGRES_USER"]}:{DB_CONN_DICT["POSTGRES_PASSWORD"]}@{DB_CONN_DICT["HOST"]}:{DB_CONN_DICT["PORT"]}/{DB_CONN_DICT["POSTGRES_DB"]}"
     return conn
 
+def loop_df_per_chunk(df, chunk_size=10):
+    """slice df per chunk, then yield each chunk"""
+
+    len_df = len(df)
+    total_iteration = len_df//chunk_size
+    for i in range(total_iteration+1):
+        df_sliced = df.slice(i * chunk_size, chunk_size)
+        print(f"process {len(df_sliced)} data, {(i/total_iteration)*100}% ..")
+        yield df_sliced
+
 def insert_to_db(df, conn_uri, dest_table_name):
     """insert dataframe to DB"""
 
@@ -185,9 +195,12 @@ if __name__ == "__main__":
 
     conn_uri = get_db_connection_uri()
 
+    # insert data from dataframe to DB per chunk
     dest_table_name = "salary_effectivity"
-    insert_to_db(df_salary_effectivity, conn_uri, dest_table_name)
+    for df_sliced in loop_df_per_chunk(df_salary_effectivity):
+        insert_to_db(df_sliced, conn_uri, dest_table_name)
 
+    # read data from DB, put it to dataframe
     # query = """
     #     SELECT *
     #     FROM salary_effectivity
