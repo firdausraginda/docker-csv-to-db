@@ -31,13 +31,6 @@ def df_from_csv(path_to_src, csv_file_name):
         schema=data_source_config_dict[csv_file_name.replace(".csv", "")]
     )
 
-def get_month_name(month_number):
-    try:
-        month_name = calendar.month_name[int(month_number)]
-        return month_name
-    except (ValueError, IndexError):
-        return None
-
 if __name__ == "__main__":
     employee_csv_name = "employees.csv"
     timesheets_csv_name = "timesheets.csv"
@@ -105,9 +98,8 @@ if __name__ == "__main__":
         pl.col("salary")
         ]).agg(pl.sum("working_hour").alias("total_working_hour"))
 
-    # sum salary per year, month, & branch_id and divide by total working hours
     df_total_hour_per_monthyear_branch_employee = df_total_hour_per_monthyear_branch_employee.with_columns(
-        pl.col("month").map_elements(get_month_name)
+        pl.col("month").map_elements(lambda month_num: calendar.month_name[int(month_num)])
     )
 
     df_divide_total_summary_with_working_hour = df_total_hour_per_monthyear_branch_employee.group_by(
