@@ -17,11 +17,11 @@ docker-compose --env-file .env up -d
 
 ### python transform script
 * script description
-  * path: `transform-scripts/salary_effectivity_append.py`
+  * path: `transform_scripts/salary_effectivity_append.py`
   * purpose: python script to extract, transform, & load using **incremental mode** 
 * execute script:
   1. create virtual environment, and install all library in `requirements.txt`
-  2. execute command: `python3 transform-scripts/salary_effectivity_append.py`
+  2. execute command: `python3 transform_scripts/salary_effectivity_append.py`
 * script flow
   1. create dataframe from CSV files
   2. manipulate to expected result
@@ -33,7 +33,7 @@ docker-compose --env-file .env up -d
 
 ### SQL transform script
 * script description
-  * path: `transform-scripts/salary_effectivity_truncate.sql`
+  * path: `transform_scripts/salary_effectivity_truncate.sql`
   * purpose: extract data from `employees` and `timesheets` table, and load to new table with **full-snapshot mode**
 * execute script
   * execute this SQL query on PGAdmin or dbeaver or any other DB tools
