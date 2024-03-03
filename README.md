@@ -1,4 +1,4 @@
-# SALARY-PER-HOUR
+# docker-csv-to-db
 
 ## how to run
 
